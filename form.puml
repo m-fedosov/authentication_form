@@ -1,0 +1,24 @@
+@startuml
+
+autonumber
+
+actor Пользователь
+box authentication_form
+    participant SpringSecurity
+    participant Serverlet
+end box
+
+Пользователь -> SpringSecurity: GET <b>http://localhost:8080/hello.html</b>
+SpringSecurity -> SpringSecurity: пользователь не\nаутентифицирован
+SpringSecurity --> Пользователь: <b>302 Found</b>\nSet-Cookie: JSESSIONID=ABC...;\nLocation: http://localhost:8080/login
+Пользователь -> SpringSecurity: POST <b>http://localhost:8080/login</b>\ncontent-type: application/x-www-form-urlencoded\nusername: user\npassword: user\ncookie: JSESSIONID=ABC...\n_csrf: secretToken
+SpringSecurity -> SpringSecurity: аутентификация\nпользователя
+SpringSecurity -> Пользователь: <b>302 Found</b>\nSet-Cookie: JSESSIONID=BCD...;\nLocation: http://localhost:8080/hello.html?continue
+Пользователь -> SpringSecurity: GET <b>http://localhost:8080/hello.html</b>\nCookie: JSESSIONID=BCD...
+SpringSecurity -> SpringSecurity: получение сессии\nпользователя
+SpringSecurity -> Serverlet: GET <b>http://localhost:8080/hello.html</b>
+Serverlet --> SpringSecurity: <b>200 OK</b>\nContent-Type text/html;charset=UTF-8\n\n<h1>Поздравляю!</h1>\nВы прошли аутентификацию на основе форм
+SpringSecurity --> Пользователь: <b>200 OK</b>\nContent-Type text/html;charset=UTF-8\n\n<h1>Поздравляю!</h1>\nВы прошли аутентификацию на основе форм
+
+
+@enduml
